@@ -1,9 +1,7 @@
+import { GenomeViewer } from "../components/GenomeViewer/GenomeViewer";
+
 function App() {
-  return (
-    <main>
-      <h1>Interactive Genome Visualizer</h1>
-    </main>
-  );
+  return <GenomeViewer />;
 }
 
 export default App;

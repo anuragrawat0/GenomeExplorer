@@ -1,6 +1,5 @@
 import { useEffect, useRef } from "react";
-import { initializeWebGPU } from "../../renderer/webgpu/device";
-import { createTrianglePipeline } from "../../renderer/webgpu/pipeline";
+import { GenomeRenderer } from "../../renderer/GenomeRenderer";
 
 export function GenomeViewer() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -10,59 +9,22 @@ export function GenomeViewer() {
 
     if (!canvas) return;
 
-    async function initialize(canvas: HTMLCanvasElement) {
+    const renderer = new GenomeRenderer(canvas);
+
+    async function startRenderer() {
       try {
-        const { device } = await initializeWebGPU();
-
-        const context = canvas.getContext(
-          "webgpu"
-        ) as GPUCanvasContext | null;
-
-        if (!context) {
-          throw new Error("Failed to get WebGPU canvas context.");
-        }
-
-        const format = navigator.gpu.getPreferredCanvasFormat();
-
-        context.configure({
-          device,
-          format,
-          alphaMode: "opaque",
-        });
-
-        const pipeline = createTrianglePipeline(device, format);
-
-        const commandEncoder = device.createCommandEncoder();
-
-        const renderPass = commandEncoder.beginRenderPass({
-          colorAttachments: [
-            {
-              view: context.getCurrentTexture().createView(),
-              clearValue: {
-                r: 0.02,
-                g: 0.02,
-                b: 0.02,
-                a: 1,
-              },
-              loadOp: "clear",
-              storeOp: "store",
-            },
-          ],
-        });
-
-        renderPass.setPipeline(pipeline);
-        renderPass.draw(3);
-        renderPass.end();
-
-        device.queue.submit([commandEncoder.finish()]);
-
-        console.log("WebGPU triangle rendered successfully.");
+        await renderer.initialize();
+        renderer.start();
       } catch (error) {
-        console.error("WebGPU initialization failed:", error);
+        console.error("Failed to initialize renderer:", error);
       }
     }
 
-    initialize(canvas);
+    startRenderer();
+
+    return () => {
+      renderer.destroy();
+    };
   }, []);
 
   return (
@@ -76,4 +38,3 @@ export function GenomeViewer() {
     />
   );
 }
-

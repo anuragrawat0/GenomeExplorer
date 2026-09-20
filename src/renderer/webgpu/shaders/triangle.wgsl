@@ -1,12 +1,25 @@
+struct Camera {
+    position: vec2<f32>,
+    zoom: f32,
+};
+
+@group(0) @binding(0)
+var<uniform> camera: Camera;
+
 @vertex
-fn vertexMain(@builtin(vertex_index) vertexIndex: u32) -> @builtin(position) vec4<f32> {
+fn vertexMain(
+    @builtin(vertex_index) vertexIndex: u32
+) -> @builtin(position) vec4<f32> {
+
     var positions = array<vec2<f32>, 3>(
         vec2<f32>(0.0, 0.6),
         vec2<f32>(-0.6, -0.6),
         vec2<f32>(0.6, -0.6)
     );
 
-    let position = positions[vertexIndex];
+    var position = positions[vertexIndex];
+
+    position = (position - camera.position) * camera.zoom;
 
     return vec4<f32>(position, 0.0, 1.0);
 }

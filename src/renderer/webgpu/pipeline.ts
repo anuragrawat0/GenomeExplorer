@@ -9,7 +9,21 @@ export function createTrianglePipeline(
   });
 
   return device.createRenderPipeline({
-    layout: "auto",
+    layout: device.createPipelineLayout({
+      bindGroupLayouts: [
+        device.createBindGroupLayout({
+          entries: [
+            {
+              binding: 0,
+              visibility: GPUShaderStage.VERTEX,
+              buffer: {
+                type: "uniform",
+              },
+            },
+          ],
+        }),
+      ],
+    }),
 
     vertex: {
       module: shaderModule,
@@ -19,11 +33,7 @@ export function createTrianglePipeline(
     fragment: {
       module: shaderModule,
       entryPoint: "fragmentMain",
-      targets: [
-        {
-          format,
-        },
-      ],
+      targets: [{ format }],
     },
 
     primitive: {

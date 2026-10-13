@@ -6,25 +6,29 @@ struct Camera {
 @group(0) @binding(0)
 var<uniform> camera: Camera;
 
+struct VertexInput {
+    @location(0) position: vec2<f32>,
+    @location(1) color: vec4<f32>,
+};
+
+struct VertexOutput {
+    @builtin(position) clipPosition: vec4<f32>,
+    @location(0) color: vec4<f32>,
+};
+
 @vertex
-fn vertexMain(
-    @builtin(vertex_index) vertexIndex: u32
-) -> @builtin(position) vec4<f32> {
+fn vertexMain(input: VertexInput) -> VertexOutput {
+    var output: VertexOutput;
 
-    var positions = array<vec2<f32>, 3>(
-        vec2<f32>(0.0, 0.6),
-        vec2<f32>(-0.6, -0.6),
-        vec2<f32>(0.6, -0.6)
-    );
+    let clip = (input.position - camera.position) * camera.zoom * 2.0;
 
-    var position = positions[vertexIndex];
+    output.clipPosition = vec4<f32>(clip, 0.0, 1.0);
+    output.color = input.color;
 
-    position = (position - camera.position) * camera.zoom;
-
-    return vec4<f32>(position, 0.0, 1.0);
+    return output;
 }
 
 @fragment
-fn fragmentMain() -> @location(0) vec4<f32> {
-    return vec4<f32>(0.1, 0.7, 1.0, 1.0);
+fn fragmentMain(input: VertexOutput) -> @location(0) vec4<f32> {
+    return input.color;
 }

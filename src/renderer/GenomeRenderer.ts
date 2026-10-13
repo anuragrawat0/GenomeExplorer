@@ -2,6 +2,7 @@ import { Camera } from "./camera";
 import { initializeWebGPU } from "./webgpu/device";
 import { createTrianglePipeline } from "./webgpu/pipeline";
 import { resizeCanvas } from "./webgpu/resize";
+import { genomeVertices } from "./genomeGeometry";
 
 export class GenomeRenderer {
   private canvas: HTMLCanvasElement;
@@ -11,7 +12,8 @@ export class GenomeRenderer {
   private pipeline: GPURenderPipeline | null = null;
   private cameraBuffer: GPUBuffer | null = null;
   private cameraBindGroup: GPUBindGroup | null = null;
-
+  private vertexBuffer: GPUBuffer | null = null;
+  private vertexCount = 0;
   private animationFrameId: number | null = null;
 
   private camera: Camera;
@@ -51,6 +53,19 @@ export class GenomeRenderer {
     });
 
     this.pipeline = createTrianglePipeline(device, format);
+
+    this.vertexCount = genomeVertices.length / 6;
+
+    this.vertexBuffer = this.device!.createBuffer({
+      size: genomeVertices.byteLength,
+      usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
+    });
+
+    this.device!.queue.writeBuffer(
+      this.vertexBuffer,
+      0,
+      genomeVertices,
+    );
 
     this.cameraBuffer = device.createBuffer({
       size: 16,
@@ -130,7 +145,10 @@ export class GenomeRenderer {
 
     renderPass.setPipeline(this.pipeline);
     renderPass.setBindGroup(0, this.cameraBindGroup);
-    renderPass.draw(3);
+    if (this.vertexBuffer) {
+      renderPass.setVertexBuffer(0, this.vertexBuffer);
+      renderPass.draw(this.vertexCount);
+    }
     renderPass.end();
 
     this.device.queue.submit([
@@ -226,5 +244,7 @@ export class GenomeRenderer {
     this.device = null;
     this.context = null;
     this.pipeline = null;
+    this.vertexBuffer?.destroy();
+    this.vertexBuffer = null;
   }
 }

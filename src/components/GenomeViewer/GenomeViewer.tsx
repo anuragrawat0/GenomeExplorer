@@ -3,6 +3,7 @@ import { GenomeRenderer } from "../../renderer/GenomeRenderer";
 
 export function GenomeViewer() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const labelsCanvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
     const canvas = canvasRef.current;

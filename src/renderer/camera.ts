@@ -1,6 +1,6 @@
 export class Camera {
-  private x = 0;
-  private y = 0;
+  private x = 0.5;
+  private y = 0.5;
   private zoom = 1;
 
   get position() {
